@@ -1,0 +1,19 @@
+<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976d2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d47a1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Shield shape -->
+  <path d="M8 5 L20 5 L20 12 L14 18 L8 12 Z" fill="url(#logoGradient)" stroke="#fff" stroke-width="1"/>
+  
+  <!-- Lock icon inside shield -->
+  <rect x="11" y="9" width="6" height="4" fill="white" rx="1"/>
+  <circle cx="14" cy="7.5" r="1.5" fill="none" stroke="white" stroke-width="1"/>
+  
+  <!-- Company name -->
+  <text x="28" y="15" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1976d2">SecuryScope</text>
+  <text x="28" y="28" font-family="Arial, sans-serif" font-size="8" fill="#666">Attendance System</text>
+</svg>
