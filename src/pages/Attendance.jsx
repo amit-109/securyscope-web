@@ -198,8 +198,8 @@ export default function Attendance() {
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'UserName', headerName: 'User', width: 150 },
-    { field: 'UserEmail', headerName: 'Email', width: 200 },
+    { field: 'Name', headerName: 'User', width: 150 },
+    { field: 'Email', headerName: 'Email', width: 200 },
     {
       field: 'Direction',
       headerName: 'Direction',

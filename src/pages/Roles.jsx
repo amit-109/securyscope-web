@@ -87,15 +87,8 @@ export default function Roles() {
   };
 
   const columns = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'role_name', headerName: 'Role Name', width: 200 },
-    { field: 'description', headerName: 'Description', width: 300 },
-    {
-      field: 'created_at',
-      headerName: 'Created Date',
-      width: 150,
-      valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString() : '',
-    },
+    { field: 'Id', headerName: 'ID', width: 70 },
+    { field: 'RoleName', headerName: 'Role Name', width: 200 },
     {
       field: 'actions',
       headerName: 'Actions',

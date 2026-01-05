@@ -113,6 +113,11 @@ class ApiService {
     return response.data;
   }
 
+  async createUser(userData) {
+    const response = await this.api.post('/register', userData);
+    return response.data;
+  }
+
   async getUserById(id) {
     const response = await this.api.get(`/users/${id}`);
     return response.data;
