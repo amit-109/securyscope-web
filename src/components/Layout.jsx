@@ -81,9 +81,9 @@ export default function Layout() {
     <div>
       <Toolbar>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <img 
-            src="/SE_Logo_Rev1.png" 
-            alt="SecuryScope Logo" 
+          <img
+            src="/SE_Logo_with_name.png"
+            alt="SecuryScope Logo"
             style={{ height: '32px', width: 'auto' }}
           />
         </Box>
@@ -137,11 +137,11 @@ export default function Layout() {
             <MenuIcon />
           </IconButton>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
-            <img 
-              src="/SE_Logo_Rev1.png" 
-              alt="SecuryScope Logo" 
+            {/* <img
+              src="/SE_Logo_with_name.png"
+              alt="SecuryScope Logo"
               style={{ height: '28px', width: 'auto', filter: 'brightness(0) invert(1)' }}
-            />
+            /> */}
             <Typography variant="h6" noWrap component="div">
               Admin Dashboard
             </Typography>

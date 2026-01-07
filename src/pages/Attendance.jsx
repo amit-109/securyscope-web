@@ -440,13 +440,13 @@ export default function Attendance() {
           {selectedRecord && (
             <Box sx={{ mt: 2 }}>
               <Typography gutterBottom><strong>ID:</strong> {selectedRecord.Id}</Typography>
-              <Typography gutterBottom><strong>User:</strong> {selectedRecord.UserName}</Typography>
-              <Typography gutterBottom><strong>Email:</strong> {selectedRecord.UserEmail}</Typography>
-              <Typography gutterBottom><strong>Direction:</strong> 
-                <Chip 
-                  label={selectedRecord.Direction} 
-                  color={selectedRecord.Direction === 'IN' ? 'success' : 'warning'} 
-                  size="small" 
+              <Typography gutterBottom><strong>User:</strong> {selectedRecord.Name}</Typography>
+              <Typography gutterBottom><strong>Email:</strong> {selectedRecord.Email}</Typography>
+              <Typography gutterBottom><strong>Direction:</strong>
+                <Chip
+                  label={selectedRecord.Direction}
+                  color={selectedRecord.Direction === 'IN' ? 'success' : 'warning'}
+                  size="small"
                   sx={{ ml: 1 }}
                 />
               </Typography>

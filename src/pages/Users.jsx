@@ -129,10 +129,7 @@ export default function Users() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
+
 
     try {
       await apiService.createUser(formData);
@@ -141,7 +138,7 @@ export default function Users() {
       setFormData({ name: '', email: '', password: '', role: '' });
       setError('');
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to create user');
+      setError(error.response?.data?.error );
     }
   };
 
@@ -207,6 +204,18 @@ export default function Users() {
         <Chip
           label={params.value ? 'Active' : 'Inactive'}
           color={params.value ? 'success' : 'default'}
+          size="small"
+        />
+      ),
+    },
+    {
+      field: 'LoginStatus',
+      headerName: 'Login Status',
+      width: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={params.value === 'Online' ? 'success' : 'default'}
           size="small"
         />
       ),
