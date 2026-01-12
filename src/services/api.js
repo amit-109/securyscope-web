@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://attendance-uat-api.abhiworld.in/api';
-//const API_BASE_URL = 'https://api.securyscope.com/api';
+//const API_BASE_URL = 'https://attendance-uat-api.abhiworld.in/api';
+const API_BASE_URL = 'https://api.securyscope.com/api';
 
 class ApiService {
   constructor() {
