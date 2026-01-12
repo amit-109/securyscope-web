@@ -50,7 +50,7 @@ const menuItems = [
   { text: 'Roles', icon: <Settings />, path: '/roles' },
   { text: 'Profile', icon: <AccountCircle />, path: '/profile' },
 ];
-
+//comments
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
