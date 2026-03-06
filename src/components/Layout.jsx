@@ -29,6 +29,7 @@ import {
   AccountCircle,
   Logout,
   Category,
+  CalendarMonth,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardPage from '../pages/Dashboard';
@@ -38,6 +39,7 @@ import LeaveTypesPage from '../pages/LeaveTypes';
 import UsersPage from '../pages/Users';
 import RolesPage from '../pages/Roles';
 import ProfilePage from '../pages/ProfileScreen';
+import HolidayMasterPage from '../pages/HolidayMaster';
 
 const drawerWidth = 240;
 
@@ -46,11 +48,12 @@ const menuItems = [
   { text: 'Attendance', icon: <AccessTime />, path: '/attendance' },
   { text: 'Leaves', icon: <EventNote />, path: '/leaves' },
   { text: 'Leave Types', icon: <Category />, path: '/leave-types' },
+  { text: 'Holiday Master', icon: <CalendarMonth />, path: '/holiday-master' },
   { text: 'Users', icon: <People />, path: '/users' },
   { text: 'Roles', icon: <Settings />, path: '/roles' },
   { text: 'Profile', icon: <AccountCircle />, path: '/profile' },
 ];
-
+//comments
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -231,6 +234,7 @@ export default function Layout() {
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/leaves" element={<LeavesPage />} />
           <Route path="/leave-types" element={<LeaveTypesPage />} />
+          <Route path="/holiday-master" element={<HolidayMasterPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/roles" element={<RolesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
