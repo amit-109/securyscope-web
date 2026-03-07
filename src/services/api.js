@@ -1,10 +1,15 @@
 import axios from 'axios';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.PROD
-    ? 'https://api.securyscope.com/api'
-    : 'https://uat-api.securyscope.com/api');
+const PROD_API_BASE_URL = 'https://api.securyscope.com/api';
+const UAT_API_BASE_URL = 'https://uat-api.securyscope.com/api';
+const CURRENT_HOSTNAME =
+  typeof window !== 'undefined' ? window.location.hostname : '';
+const IS_UAT_HOST = CURRENT_HOSTNAME === 'uat.securyscope.com';
+
+const API_BASE_URL = IS_UAT_HOST
+  ? UAT_API_BASE_URL
+  : import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.PROD ? PROD_API_BASE_URL : UAT_API_BASE_URL);
 
 class ApiService {
   constructor() {
