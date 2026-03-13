@@ -6,6 +6,7 @@ import {
   AppBar,
   Toolbar,
   List,
+  Collapse,
   Typography,
   Divider,
   IconButton,
@@ -30,6 +31,11 @@ import {
   Logout,
   Category,
   CalendarMonth,
+  ReceiptLong,
+  Business,
+  Badge,
+  ExpandLess,
+  ExpandMore,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardPage from '../pages/Dashboard';
@@ -40,20 +46,41 @@ import UsersPage from '../pages/Users';
 import RolesPage from '../pages/Roles';
 import ProfilePage from '../pages/ProfileScreen';
 import HolidayMasterPage from '../pages/HolidayMaster';
+import BillingClientsPage from '../pages/BillingClients';
+import BillingClientFormPage from '../pages/BillingClientForm';
 
 const drawerWidth = 240;
 
 const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-  { text: 'Attendance', icon: <AccessTime />, path: '/attendance' },
-  { text: 'Leaves', icon: <EventNote />, path: '/leaves' },
-  { text: 'Leave Types', icon: <Category />, path: '/leave-types' },
-  { text: 'Holiday Master', icon: <CalendarMonth />, path: '/holiday-master' },
-  { text: 'Users', icon: <People />, path: '/users' },
-  { text: 'Roles', icon: <Settings />, path: '/roles' },
-  { text: 'Profile', icon: <AccountCircle />, path: '/profile' },
+  {
+    text: 'User',
+    icon: <People />,
+    children: [
+      { text: 'Users', icon: <Badge />, path: '/users' },
+      { text: 'Attendance', icon: <AccessTime />, path: '/attendance' },
+      { text: 'Roles', icon: <Settings />, path: '/roles' },
+      { text: 'Profile', icon: <AccountCircle />, path: '/profile' },
+    ],
+  },
+  {
+    text: 'Leave',
+    icon: <EventNote />,
+    children: [
+      { text: 'Leaves', icon: <EventNote />, path: '/leaves' },
+      { text: 'Leave Types', icon: <Category />, path: '/leave-types' },
+      { text: 'Holiday Master', icon: <CalendarMonth />, path: '/holiday-master' },
+    ],
+  },
+  {
+    text: 'Billing',
+    icon: <ReceiptLong />,
+    children: [
+      { text: 'Client', icon: <Business />, path: '/billing/client' },
+    ],
+  },
 ];
-//comments
+
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -62,9 +89,31 @@ export default function Layout() {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [openMenus, setOpenMenus] = useState(() =>
+    menuItems.reduce((acc, item) => {
+      if (item.children) {
+        acc[item.text] = item.children.some((child) => child.path === window.location.pathname);
+      }
+      return acc;
+    }, {})
+  );
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleMenuToggle = (menuKey) => {
+    setOpenMenus((prev) => ({
+      ...prev,
+      [menuKey]: !prev[menuKey],
+    }));
+  };
+
+  const navigateTo = (path) => {
+    navigate(path);
+    if (isMobile) {
+      setMobileOpen(false);
+    }
   };
 
   const handleProfileMenuOpen = (event) => {
@@ -94,27 +143,65 @@ export default function Layout() {
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => navigate(item.path)}
-              sx={{
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                  },
-                  '& .MuiListItemIcon-root': {
+          <Box key={item.text}>
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={
+                  item.path === location.pathname ||
+                  item.children?.some((child) => child.path === location.pathname)
+                }
+                onClick={() => (
+                  item.children ? handleMenuToggle(item.text) : navigateTo(item.path)
+                )}
+                sx={{
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.main',
                     color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: 'white',
+                    },
                   },
-                },
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
+                }}
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+                {item.children ? (
+                  openMenus[item.text] ? <ExpandLess /> : <ExpandMore />
+                ) : null}
+              </ListItemButton>
+            </ListItem>
+
+            {item.children ? (
+              <Collapse in={openMenus[item.text]} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {item.children.map((child) => (
+                    <ListItem key={child.text} disablePadding>
+                      <ListItemButton
+                        selected={location.pathname === child.path}
+                        onClick={() => navigateTo(child.path)}
+                        sx={{
+                          pl: 5,
+                          '&.Mui-selected': {
+                            backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                            color: 'primary.main',
+                            '& .MuiListItemIcon-root': {
+                              color: 'primary.main',
+                            },
+                          },
+                        }}
+                      >
+                        <ListItemIcon>{child.icon}</ListItemIcon>
+                        <ListItemText primary={child.text} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Collapse>
+            ) : null}
+          </Box>
         ))}
       </List>
     </div>
@@ -235,6 +322,9 @@ export default function Layout() {
           <Route path="/leaves" element={<LeavesPage />} />
           <Route path="/leave-types" element={<LeaveTypesPage />} />
           <Route path="/holiday-master" element={<HolidayMasterPage />} />
+          <Route path="/billing/client" element={<BillingClientsPage />} />
+          <Route path="/billing/client/new" element={<BillingClientFormPage />} />
+          <Route path="/billing/client/:clientId/edit" element={<BillingClientFormPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/roles" element={<RolesPage />} />
           <Route path="/profile" element={<ProfilePage />} />

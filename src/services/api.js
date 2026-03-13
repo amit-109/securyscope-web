@@ -11,6 +11,8 @@ const API_BASE_URL = IS_UAT_HOST
   : import.meta.env.VITE_API_BASE_URL ||
     (import.meta.env.PROD ? PROD_API_BASE_URL : UAT_API_BASE_URL);
 
+const AUTH_EXPIRED_EVENT = 'auth-expired';
+
 class ApiService {
   constructor() {
     this.api = axios.create({
@@ -34,6 +36,7 @@ class ApiService {
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
         }
 
         return Promise.reject(error);
@@ -73,6 +76,32 @@ class ApiService {
 
   async deleteAttendance(id) {
     const response = await this.api.delete(`/attendance/${id}`);
+    return response.data;
+  }
+
+  // Billing Clients APIs
+  async getClients() {
+    const response = await this.api.get('/clients');
+    return response.data;
+  }
+
+  async getClientById(id) {
+    const response = await this.api.get(`/clients/${id}`);
+    return response.data;
+  }
+
+  async createClient(data) {
+    const response = await this.api.post('/clients', data);
+    return response.data;
+  }
+
+  async updateClient(id, data) {
+    const response = await this.api.put(`/clients/${id}`, data);
+    return response.data;
+  }
+
+  async deleteClient(id) {
+    const response = await this.api.delete(`/clients/${id}`);
     return response.data;
   }
 
@@ -205,4 +234,5 @@ class ApiService {
 }
 
 const apiService = new ApiService();
+export { AUTH_EXPIRED_EVENT };
 export default apiService;

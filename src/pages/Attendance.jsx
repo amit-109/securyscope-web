@@ -441,19 +441,35 @@ export default function Attendance() {
         <DialogContent>
           {selectedRecord && (
             <Box sx={{ mt: 2 }}>
-              <Typography gutterBottom><strong>User:</strong> {selectedRecord.Name}</Typography>
-              <Typography gutterBottom><strong>Email:</strong> {selectedRecord.Email}</Typography>
-              <Typography gutterBottom><strong>Date:</strong> {formatDateValue(selectedRecord.AttendanceDate)}</Typography>
-              <Typography gutterBottom><strong>In Time:</strong> {formatDateTimeValue(selectedRecord.InTime)}</Typography>
-              <Typography gutterBottom><strong>Out Time:</strong> {formatDateTimeValue(selectedRecord.OutTime)}</Typography>
-              <Typography gutterBottom><strong>Duration:</strong> {selectedRecord.Duration || '-'}</Typography>
+              <Box sx={{ mb: 1 }}>
+                <strong>User:</strong> {selectedRecord.Name}
+              </Box>
+              <Box sx={{ mb: 1 }}>
+                <strong>Email:</strong> {selectedRecord.Email}
+              </Box>
+              <Box sx={{ mb: 1 }}>
+                <strong>Date:</strong> {formatDateValue(selectedRecord.AttendanceDate)}
+              </Box>
+              <Box sx={{ mb: 1 }}>
+                <strong>In Time:</strong> {formatDateTimeValue(selectedRecord.InTime)}
+              </Box>
+              <Box sx={{ mb: 1 }}>
+                <strong>Out Time:</strong> {formatDateTimeValue(selectedRecord.OutTime)}
+              </Box>
+              <Box sx={{ mb: 1 }}>
+                <strong>Duration:</strong> {selectedRecord.Duration || '-'}
+              </Box>
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={6}>
-                  <Typography gutterBottom><strong>In Image:</strong></Typography>
+                  <Box sx={{ mb: 1 }}>
+                    <strong>In Image:</strong>
+                  </Box>
                   <ImageThumbnail path={selectedRecord.PhotoPath_IN} label={`${selectedRecord.Name} check-in`} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography gutterBottom><strong>Out Image:</strong></Typography>
+                  <Box sx={{ mb: 1 }}>
+                    <strong>Out Image:</strong>
+                  </Box>
                   <ImageThumbnail path={selectedRecord.PhotoPath_OUT} label={`${selectedRecord.Name} check-out`} />
                 </Grid>
               </Grid>
