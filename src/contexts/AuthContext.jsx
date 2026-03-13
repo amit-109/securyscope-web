@@ -16,13 +16,26 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
+  const clearSession = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  };
+
   useEffect(() => {
     if (token) {
       const userData = localStorage.getItem('user');
       if (userData) {
-        setUser(JSON.parse(userData));
+        try {
+          setUser(JSON.parse(userData));
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+          clearSession();
+        }
       }
     }
+
     setLoading(false);
   }, [token]);
 
@@ -30,18 +43,17 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await apiService.login(email, password);
       const { token: newToken, user: userData } = response;
-      
-      // Add role information to user data
+
       const enhancedUser = {
         ...userData,
         role: userData.role || (userData.name === 'Admin' ? 1 : 2)
       };
-      
+
       setToken(newToken);
       setUser(enhancedUser);
       localStorage.setItem('token', newToken);
       localStorage.setItem('user', JSON.stringify(enhancedUser));
-      
+
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
@@ -49,11 +61,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  const logout = async () => {
+    try {
+      const userId = user?.Id || user?.id || user?.UserId;
+      if (token && userId) {
+        await apiService.logout(userId);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+
+    clearSession();
   };
 
   const value = {

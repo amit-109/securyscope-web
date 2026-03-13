@@ -11,7 +11,6 @@ import {
   Button,
   TextField,
   MenuItem,
-  Chip,
   Grid,
   Card,
   CardContent,
@@ -22,7 +21,7 @@ import {
   Tab,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { Edit, Delete, Visibility, FilterList, Today, CalendarMonth } from '@mui/icons-material';
+import { Visibility, FilterList, Today, CalendarMonth } from '@mui/icons-material';
 import apiService from '../services/api';
 
 function TabPanel({ children, value, index }) {
@@ -33,25 +32,78 @@ function TabPanel({ children, value, index }) {
   );
 }
 
+function EmptyAttendanceState({ message }) {
+  return (
+    <Box
+      sx={{
+        height: '100%',
+        minHeight: 240,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        px: 2,
+      }}
+    >
+      <Typography variant="h6" color="text.secondary" align="center">
+        {message}
+      </Typography>
+    </Box>
+  );
+}
+
 export default function Attendance() {
   const [attendance, setAttendance] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editDialog, setEditDialog] = useState(false);
   const [viewDialog, setViewDialog] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [filters, setFilters] = useState({
     selectedUser: '',
     dateFrom: new Date().toISOString().split('T')[0], // Today
     dateTo: new Date().toISOString().split('T')[0],   // Today
-    direction: ''
   });
-  const [editData, setEditData] = useState({
-    latitude: '',
-    longitude: '',
-    direction: '',
+
+  const getApiOrigin = () => {
+    const baseUrl = apiService.api?.defaults?.baseURL || '';
+    return baseUrl.replace(/\/api\/?$/, '');
+  };
+
+  const getImageUrl = (path) => {
+    if (!path) {
+      return '';
+    }
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+
+    return `${getApiOrigin()}${path}`;
+  };
+
+  const formatDateValue = (value) => {
+    if (!value) {
+      return '-';
+    }
+
+    return new Date(value).toLocaleDateString();
+  };
+
+  const formatDateTimeValue = (value) => {
+    if (!value) {
+      return '-';
+    }
+
+    return new Date(value).toLocaleString();
+  };
+
+  const normalizeAttendanceRecord = (record, index) => ({
+    id: record.Id || `${record.UserId}-${record.AttendanceDate || index}`,
+    ...record,
   });
+
+  const getRecordDate = (record) => record.AttendanceDate || record.InTime?.split(' ')[0] || '';
 
   useEffect(() => {
     loadUsers();
@@ -72,14 +124,8 @@ export default function Attendance() {
     try {
       const data = await apiService.getAllAttendance();
       const today = new Date().toISOString().split('T')[0];
-      const todayRecords = data.filter(record => {
-        const recordDate = new Date(record.CreatedAt).toISOString().split('T')[0];
-        return recordDate === today;
-      });
-      setAttendance(todayRecords.map((record, index) => ({
-        id: record.Id || index,
-        ...record,
-      })));
+      const todayRecords = data.filter((record) => getRecordDate(record) === today);
+      setAttendance(todayRecords.map(normalizeAttendanceRecord));
     } catch (error) {
       console.error('Error loading attendance:', error);
     } finally {
@@ -97,18 +143,12 @@ export default function Attendance() {
         data = await apiService.getAllAttendance();
       }
       
-      // Apply date and direction filters
-      const filtered = data.filter(record => {
-        const recordDate = new Date(record.CreatedAt).toISOString().split('T')[0];
-        const matchesDate = recordDate >= filters.dateFrom && recordDate <= filters.dateTo;
-        const matchesDirection = !filters.direction || record.Direction === filters.direction;
-        return matchesDate && matchesDirection;
+      const filtered = data.filter((record) => {
+        const recordDate = getRecordDate(record);
+        return recordDate >= filters.dateFrom && recordDate <= filters.dateTo;
       });
       
-      setAttendance(filtered.map((record, index) => ({
-        id: record.Id || index,
-        ...record,
-      })));
+      setAttendance(filtered.map(normalizeAttendanceRecord));
     } catch (error) {
       console.error('Error loading attendance:', error);
     } finally {
@@ -137,18 +177,7 @@ export default function Attendance() {
       selectedUser: '',
       dateFrom: today,
       dateTo: today,
-      direction: ''
     });
-  };
-
-  const handleEdit = (record) => {
-    setSelectedRecord(record);
-    setEditData({
-      latitude: record.Latitude,
-      longitude: record.Longitude,
-      direction: record.Direction,
-    });
-    setEditDialog(true);
   };
 
   const handleView = (record) => {
@@ -156,85 +185,98 @@ export default function Attendance() {
     setViewDialog(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
-      try {
-        await apiService.deleteAttendance(id);
-        if (tabValue === 0) {
-          loadTodayAttendance();
-        } else {
-          loadFilteredAttendance();
-        }
-      } catch (error) {
-        console.error('Error deleting attendance:', error);
-      }
-    }
-  };
-
-  const handleSaveEdit = async () => {
-    try {
-      await apiService.updateAttendance(selectedRecord.id, editData);
-      setEditDialog(false);
-      if (tabValue === 0) {
-        loadTodayAttendance();
-      } else {
-        loadFilteredAttendance();
-      }
-    } catch (error) {
-      console.error('Error updating attendance:', error);
-    }
-  };
-
   const getAttendanceStats = () => {
     const totalRecords = attendance.length;
-    const inRecords = attendance.filter(r => r.Direction === 'IN').length;
-    const outRecords = attendance.filter(r => r.Direction === 'OUT').length;
+    const checkedIn = attendance.filter((r) => r.InTime).length;
+    const checkedOut = attendance.filter((r) => r.OutTime).length;
     const uniqueUsers = new Set(attendance.map(r => r.UserId)).size;
     
-    return { totalRecords, inRecords, outRecords, uniqueUsers };
+    return { totalRecords, checkedIn, checkedOut, uniqueUsers };
   };
 
   const stats = getAttendanceStats();
+  const emptyStateMessage =
+    tabValue === 0 ? 'Attendance not marked yet' : 'No attendance records found';
+
+  const ImageThumbnail = ({ path, label }) => {
+    if (!path) {
+      return <Typography variant="body2" color="text.secondary">-</Typography>;
+    }
+
+    return (
+      <Box
+        component="img"
+        src={getImageUrl(path)}
+        alt={label}
+        onClick={() => setPreviewImage({ src: getImageUrl(path), label })}
+        sx={{
+          width: 48,
+          height: 48,
+          objectFit: 'cover',
+          borderRadius: 1.5,
+          border: '1px solid',
+          borderColor: 'divider',
+          cursor: 'zoom-in',
+        }}
+      />
+    );
+  };
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 70 },
     { field: 'Name', headerName: 'User', width: 150 },
     { field: 'Email', headerName: 'Email', width: 200 },
     {
-      field: 'Direction',
-      headerName: 'Direction',
+      field: 'AttendanceDate',
+      headerName: 'Date',
+      width: 120,
+      valueFormatter: (params) => formatDateValue(params.value),
+    },
+    {
+      field: 'InTime',
+      headerName: 'In Time',
+      width: 180,
+      valueFormatter: (params) => formatDateTimeValue(params.value),
+    },
+    {
+      field: 'OutTime',
+      headerName: 'Out Time',
+      width: 180,
+      valueFormatter: (params) => formatDateTimeValue(params.value),
+    },
+    {
+      field: 'Duration',
+      headerName: 'Duration',
+      width: 120,
+      valueFormatter: (params) => params.value || '-',
+    },
+    {
+      field: 'PhotoPath_IN',
+      headerName: 'In Image',
       width: 100,
+      sortable: false,
       renderCell: (params) => (
-        <Chip
-          label={params.value}
-          color={params.value === 'IN' ? 'success' : 'warning'}
-          size="small"
-        />
+        <ImageThumbnail path={params.value} label={`${params.row.Name} check-in`} />
       ),
     },
-    { field: 'Latitude', headerName: 'Latitude', width: 120 },
-    { field: 'Longitude', headerName: 'Longitude', width: 120 },
     {
-      field: 'CreatedAt',
-      headerName: 'Date/Time',
-      width: 180,
-      valueFormatter: (params) => new Date(params.value).toLocaleString(),
+      field: 'PhotoPath_OUT',
+      headerName: 'Out Image',
+      width: 100,
+      sortable: false,
+      renderCell: (params) => (
+        <ImageThumbnail path={params.value} label={`${params.row.Name} check-out`} />
+      ),
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 150,
+      width: 90,
       sortable: false,
       renderCell: (params) => (
         <Box>
           <IconButton onClick={() => handleView(params.row)} size="small">
             <Visibility />
-          </IconButton>
-          <IconButton onClick={() => handleEdit(params.row)} size="small">
-            <Edit />
-          </IconButton>
-          <IconButton onClick={() => handleDelete(params.row.id)} size="small" color="error">
-            <Delete />
           </IconButton>
         </Box>
       ),
@@ -260,16 +302,16 @@ export default function Attendance() {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Typography color="textSecondary" gutterBottom>Check-ins</Typography>
-              <Typography variant="h5" color="success.main">{stats.inRecords}</Typography>
+              <Typography color="textSecondary" gutterBottom>Checked In</Typography>
+              <Typography variant="h5" color="success.main">{stats.checkedIn}</Typography>
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Typography color="textSecondary" gutterBottom>Check-outs</Typography>
-              <Typography variant="h5" color="warning.main">{stats.outRecords}</Typography>
+              <Typography color="textSecondary" gutterBottom>Checked Out</Typography>
+              <Typography variant="h5" color="warning.main">{stats.checkedOut}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -298,6 +340,11 @@ export default function Attendance() {
             rows={attendance}
             columns={columns}
             loading={loading}
+            slots={{
+              noRowsOverlay: () => (
+                <EmptyAttendanceState message={emptyStateMessage} />
+              ),
+            }}
             pageSize={10}
             rowsPerPageOptions={[10, 25, 50]}
             disableSelectionOnClick
@@ -350,20 +397,6 @@ export default function Attendance() {
               />
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Direction</InputLabel>
-                <Select
-                  value={filters.direction}
-                  onChange={(e) => handleFilterChange('direction', e.target.value)}
-                  label="Direction"
-                >
-                  <MenuItem value="">All</MenuItem>
-                  <MenuItem value="IN">IN</MenuItem>
-                  <MenuItem value="OUT">OUT</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
               <Button
                 fullWidth
                 variant="contained"
@@ -390,6 +423,11 @@ export default function Attendance() {
             rows={attendance}
             columns={columns}
             loading={loading}
+            slots={{
+              noRowsOverlay: () => (
+                <EmptyAttendanceState message={emptyStateMessage} />
+              ),
+            }}
             pageSize={10}
             rowsPerPageOptions={[10, 25, 50]}
             disableSelectionOnClick
@@ -397,76 +435,60 @@ export default function Attendance() {
         </Paper>
       </TabPanel>
 
-      {/* Edit Dialog */}
-      <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit Attendance Record</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Latitude"
-            value={editData.latitude}
-            onChange={(e) => setEditData({ ...editData, latitude: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Longitude"
-            value={editData.longitude}
-            onChange={(e) => setEditData({ ...editData, longitude: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            select
-            label="Direction"
-            value={editData.direction}
-            onChange={(e) => setEditData({ ...editData, direction: e.target.value })}
-            margin="normal"
-          >
-            <MenuItem value="IN">IN</MenuItem>
-            <MenuItem value="OUT">OUT</MenuItem>
-          </TextField>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialog(false)}>Cancel</Button>
-          <Button onClick={handleSaveEdit} variant="contained">Save</Button>
-        </DialogActions>
-      </Dialog>
-
       {/* View Dialog */}
       <Dialog open={viewDialog} onClose={() => setViewDialog(false)} maxWidth="md" fullWidth>
         <DialogTitle>Attendance Details</DialogTitle>
         <DialogContent>
           {selectedRecord && (
             <Box sx={{ mt: 2 }}>
-              <Typography gutterBottom><strong>ID:</strong> {selectedRecord.Id}</Typography>
-              <Typography gutterBottom><strong>User:</strong> {selectedRecord.UserName}</Typography>
-              <Typography gutterBottom><strong>Email:</strong> {selectedRecord.UserEmail}</Typography>
-              <Typography gutterBottom><strong>Direction:</strong> 
-                <Chip 
-                  label={selectedRecord.Direction} 
-                  color={selectedRecord.Direction === 'IN' ? 'success' : 'warning'} 
-                  size="small" 
-                  sx={{ ml: 1 }}
-                />
-              </Typography>
-              <Typography gutterBottom><strong>Location:</strong> {selectedRecord.Latitude}, {selectedRecord.Longitude}</Typography>
-              <Typography gutterBottom><strong>Date/Time:</strong> {new Date(selectedRecord.CreatedAt).toLocaleString()}</Typography>
-              {selectedRecord.PhotoPath && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography gutterBottom><strong>Photo:</strong></Typography>
-                  <img
-                    src={`https://api.securyscope.com${selectedRecord.PhotoPath}`}
-                    alt="Attendance"
-                    style={{ maxWidth: '100%', height: 'auto', borderRadius: 8 }}
-                  />
-                </Box>
-              )}
+              <Typography gutterBottom><strong>User:</strong> {selectedRecord.Name}</Typography>
+              <Typography gutterBottom><strong>Email:</strong> {selectedRecord.Email}</Typography>
+              <Typography gutterBottom><strong>Date:</strong> {formatDateValue(selectedRecord.AttendanceDate)}</Typography>
+              <Typography gutterBottom><strong>In Time:</strong> {formatDateTimeValue(selectedRecord.InTime)}</Typography>
+              <Typography gutterBottom><strong>Out Time:</strong> {formatDateTimeValue(selectedRecord.OutTime)}</Typography>
+              <Typography gutterBottom><strong>Duration:</strong> {selectedRecord.Duration || '-'}</Typography>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <Typography gutterBottom><strong>In Image:</strong></Typography>
+                  <ImageThumbnail path={selectedRecord.PhotoPath_IN} label={`${selectedRecord.Name} check-in`} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography gutterBottom><strong>Out Image:</strong></Typography>
+                  <ImageThumbnail path={selectedRecord.PhotoPath_OUT} label={`${selectedRecord.Name} check-out`} />
+                </Grid>
+              </Grid>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setViewDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(previewImage)}
+        onClose={() => setPreviewImage(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>{previewImage?.label || 'Attendance Image'}</DialogTitle>
+        <DialogContent>
+          {previewImage && (
+            <Box
+              component="img"
+              src={previewImage.src}
+              alt={previewImage.label}
+              sx={{
+                width: '100%',
+                maxHeight: '75vh',
+                objectFit: 'contain',
+                borderRadius: 2,
+              }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPreviewImage(null)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>

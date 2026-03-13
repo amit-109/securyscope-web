@@ -38,8 +38,8 @@ export default function Dashboard() {
       ]);
 
       const today = new Date().toISOString().split('T')[0];
-      const todayAttendance = attendance.filter(record => 
-        record.CreatedAt?.startsWith(today)
+      const todayAttendance = attendance.filter(
+        (record) => record.AttendanceDate === today || record.InTime?.startsWith(today)
       ).length;
 
       const pendingLeaves = leaves.filter(leave => 

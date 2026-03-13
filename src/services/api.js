@@ -27,6 +27,18 @@ class ApiService {
       }
       return config;
     });
+
+    this.api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+
+        return Promise.reject(error);
+      }
+    );
   }
 
   async login(email, password) {
@@ -39,8 +51,8 @@ class ApiService {
     return response.data;
   }
 
-  async logout() {
-    await this.api.post('/logout');
+  async logout(userId) {
+    await this.api.post('/logout', { userId });
   }
 
   // Attendance APIs
