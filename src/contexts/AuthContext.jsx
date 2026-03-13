@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import apiService from '../services/api';
+import apiService, { AUTH_EXPIRED_EVENT } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -38,6 +38,17 @@ export const AuthProvider = ({ children }) => {
 
     setLoading(false);
   }, [token]);
+
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      clearSession();
+    };
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    };
+  }, []);
 
   const login = async (email, password) => {
     try {
