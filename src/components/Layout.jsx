@@ -48,6 +48,9 @@ import ProfilePage from '../pages/ProfileScreen';
 import HolidayMasterPage from '../pages/HolidayMaster';
 import BillingClientsPage from '../pages/BillingClients';
 import BillingClientFormPage from '../pages/BillingClientForm';
+import BillingContactPersonsPage from '../pages/BillingContactPersons';
+import BillingContactPersonFormPage from '../pages/BillingContactPersonForm';
+import StateMasterPage from '../pages/StateMaster';
 
 const drawerWidth = 240;
 
@@ -77,6 +80,8 @@ const menuItems = [
     icon: <ReceiptLong />,
     children: [
       { text: 'Client', icon: <Business />, path: '/billing/client' },
+      { text: 'Contact Persons', icon: <People />, path: '/billing/contacts' },
+      { text: 'State Master', icon: <Badge />, path: '/billing/states' },
     ],
   },
 ];
@@ -325,6 +330,10 @@ export default function Layout() {
           <Route path="/billing/client" element={<BillingClientsPage />} />
           <Route path="/billing/client/new" element={<BillingClientFormPage />} />
           <Route path="/billing/client/:clientId/edit" element={<BillingClientFormPage />} />
+          <Route path="/billing/contacts" element={<BillingContactPersonsPage />} />
+          <Route path="/billing/contacts/new" element={<BillingContactPersonFormPage />} />
+          <Route path="/billing/contacts/:contactId/edit" element={<BillingContactPersonFormPage />} />
+          <Route path="/billing/states" element={<StateMasterPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/roles" element={<RolesPage />} />
           <Route path="/profile" element={<ProfilePage />} />

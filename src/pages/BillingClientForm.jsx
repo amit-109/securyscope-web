@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Grid,
@@ -43,6 +44,20 @@ export default function BillingClientForm() {
   const [loading, setLoading] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [states, setStates] = useState([]);
+
+  useEffect(() => {
+    const loadStates = async () => {
+      try {
+        const stateData = await apiService.getStates();
+        setStates(stateData || []);
+      } catch (loadError) {
+        console.error('Error loading states:', loadError);
+      }
+    };
+
+    loadStates();
+  }, []);
 
   useEffect(() => {
     if (!isEditMode) {
@@ -228,13 +243,29 @@ export default function BillingClientForm() {
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                size="small"
-                label="State Code"
-                value={formData.stateCode}
-                onChange={(e) => handleChange('stateCode', e.target.value)}
+              <Autocomplete
+                options={states || []}
+                getOptionLabel={(option) =>
+                  option.StateName || option.stateName || option.StateCode || option.stateCode || ''
+                }
+                value={
+                  (states || []).find(
+                    (s) => (s.StateCode || s.stateCode)?.toString() === formData.stateCode?.toString()
+                  ) || null
+                }
+                onChange={(_, value) =>
+                  handleChange('stateCode', value ? (value.StateCode || value.stateCode) : '')
+                }
                 disabled={loading || saving}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="State"
+                    size="small"
+                    placeholder="Select State"
+                    InputLabelProps={{ shrink: true }}
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={12} md={4}>
