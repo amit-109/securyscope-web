@@ -105,6 +105,17 @@ class ApiService {
     return response.data;
   }
 
+  // State Master APIs
+  async getStates() {
+    const response = await this.api.get('/states');
+    return response.data;
+  }
+
+  async createState(data) {
+    const response = await this.api.post('/states', data);
+    return response.data;
+  }
+
   // Contact Person APIs
   async getContactPersons() {
     const response = await this.api.get('/contacts');
