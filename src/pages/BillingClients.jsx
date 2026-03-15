@@ -97,6 +97,12 @@ export default function BillingClients() {
       valueGetter: (params) => params.row.gstin || params.row.GSTIN || '',
     },
     {
+      field: 'address',
+      headerName: 'Address',
+      width: 250,
+      valueGetter: (params) => params.row.address || params.row.Address || '',
+    },
+    {
       field: 'city',
       headerName: 'City',
       width: 130,
@@ -104,9 +110,17 @@ export default function BillingClients() {
     },
     {
       field: 'stateCode',
-      headerName: 'State Code',
-      width: 110,
-      valueGetter: (params) => params.row.stateCode || params.row.StateCode || '',
+      headerName: 'State',
+      width: 150,
+      valueGetter: (params) =>
+        params.row.stateName || params.row.StateName ||
+        params.row.stateCode || params.row.StateCode || '',
+    },
+    {
+      field: 'pin',
+      headerName: 'PIN',
+      width: 120,
+      valueGetter: (params) => params.row.pin || params.row.Pin || params.row.PIN || '',
     },
     {
       field: 'phone',
@@ -154,8 +168,8 @@ export default function BillingClients() {
         <Box><strong>Initials:</strong> {client.initials || client.Initials || '-'}</Box>
         <Box><strong>Address:</strong> {client.address || client.Address}</Box>
         <Box><strong>City:</strong> {client.city || client.City}</Box>
-        <Box><strong>State Code:</strong> {client.stateCode || client.StateCode}</Box>
-        <Box><strong>PIN:</strong> {client.pin || client.Pin}</Box>
+        <Box><strong>State:</strong> {client.stateName || client.StateName || client.stateCode || client.StateCode}</Box>
+        <Box><strong>PIN:</strong> {client.pin || client.Pin || client.PIN}</Box>
         <Box><strong>Phone:</strong> {client.phone || client.Phone}</Box>
         <Box><strong>Email:</strong> {client.email || client.Email}</Box>
       </Box>

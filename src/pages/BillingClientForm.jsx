@@ -30,7 +30,7 @@ const mapClientToForm = (data) => ({
   address: data.address || data.Address || '',
   city: data.city || data.City || '',
   stateCode: data.stateCode || data.StateCode || '',
-  pin: data.pin || data.Pin || '',
+  pin: data.pin || data.Pin || data.PIN || '',
   phone: data.phone || data.Phone || '',
   email: data.email || data.Email || '',
   initials: data.initials || data.Initials || '',
@@ -41,10 +41,10 @@ export default function BillingClientForm() {
   const { clientId } = useParams();
   const isEditMode = Boolean(clientId);
   const [formData, setFormData] = useState(initialFormData);
+  const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [states, setStates] = useState([]);
 
   useEffect(() => {
     const loadStates = async () => {
@@ -104,6 +104,10 @@ export default function BillingClientForm() {
 
     if (!formData.address.trim()) {
       missingFields.push('Address');
+    }
+
+    if (!formData.stateCode) {
+      missingFields.push('State');
     }
 
     if (missingFields.length > 0) {
