@@ -105,6 +105,32 @@ class ApiService {
     return response.data;
   }
 
+  // Contact Person APIs
+  async getContactPersons() {
+    const response = await this.api.get('/contacts');
+    return response.data;
+  }
+
+  async getContactPersonById(id) {
+    const response = await this.api.get(`/contacts/${id}`);
+    return response.data;
+  }
+
+  async createContactPerson(data) {
+    const response = await this.api.post('/contacts', data);
+    return response.data;
+  }
+
+  async updateContactPerson(id, data) {
+    const response = await this.api.put(`/contacts/${id}`, data);
+    return response.data;
+  }
+
+  async deleteContactPerson(id) {
+    const response = await this.api.delete(`/contacts/${id}`);
+    return response.data;
+  }
+
   // Leave APIs
   async getAllLeaves() {
     const response = await this.api.get('/leaves');
@@ -133,6 +159,27 @@ class ApiService {
 
   async deleteLeave(id) {
     const response = await this.api.delete(`/leaves/${id}`);
+    return response.data;
+  }
+
+  // State Code APIs
+  async getStates() {
+    const response = await this.api.get('/states');
+    return response.data;
+  }
+
+  async createState(data) {
+    const response = await this.api.post('/states', data);
+    return response.data;
+  }
+
+  async updateState(id, data) {
+    const response = await this.api.put(`/states/${id}`, data);
+    return response.data;
+  }
+
+  async deleteState(id) {
+    const response = await this.api.delete(`/states/${id}`);
     return response.data;
   }
 

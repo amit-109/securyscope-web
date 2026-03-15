@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
+  Autocomplete,
   Box,
   Typography,
   Paper,
@@ -10,13 +11,9 @@ import {
   DialogActions,
   Button,
   TextField,
-  MenuItem,
   Grid,
   Card,
   CardContent,
-  FormControl,
-  InputLabel,
-  Select,
   Tabs,
   Tab,
 } from '@mui/material';
@@ -358,21 +355,20 @@ export default function Attendance() {
         <Paper sx={{ p: 2, mb: 2 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6} md={2}>
-              <FormControl fullWidth size="small">
-                <InputLabel>User</InputLabel>
-                <Select
-                  value={filters.selectedUser}
-                  onChange={(e) => handleFilterChange('selectedUser', e.target.value)}
-                  label="User"
-                >
-                  <MenuItem value="">All Users</MenuItem>
-                  {users.map(user => (
-                    <MenuItem key={user.Id} value={user.Id}>
-                      {user.Name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                fullWidth
+                options={users || []}
+                getOptionLabel={(option) => option.Name || option.name || ''}
+                value={
+                  (users || []).find((u) => (u.Id || u.id)?.toString() === filters.selectedUser?.toString()) || null
+                }
+                onChange={(_, value) =>
+                  handleFilterChange('selectedUser', value ? (value.Id || value.id) : '')
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="User" size="small" />
+                )}
+              />
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
               <TextField
