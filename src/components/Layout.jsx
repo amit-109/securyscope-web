@@ -50,6 +50,9 @@ import BillingClientsPage from '../pages/BillingClients';
 import BillingClientFormPage from '../pages/BillingClientForm';
 import BillingContactPersonsPage from '../pages/BillingContactPersons';
 import BillingContactPersonFormPage from '../pages/BillingContactPersonForm';
+import BillingQuotationsPage from '../pages/BillingQuotations';
+import BillingQuotationFormPage from '../pages/BillingQuotationForm';
+import BillingQuotationVersionsPage from '../pages/BillingQuotationVersions';
 import StateMasterPage from '../pages/StateMaster';
 
 const drawerWidth = 240;
@@ -81,6 +84,7 @@ const menuItems = [
     children: [
       { text: 'Client', icon: <Business />, path: '/billing/client' },
       { text: 'Contact Persons', icon: <People />, path: '/billing/contacts' },
+      { text: 'Quotations', icon: <ReceiptLong />, path: '/billing/quotations' },
       { text: 'State Master', icon: <Badge />, path: '/billing/states' },
     ],
   },
@@ -333,6 +337,10 @@ export default function Layout() {
           <Route path="/billing/contacts" element={<BillingContactPersonsPage />} />
           <Route path="/billing/contacts/new" element={<BillingContactPersonFormPage />} />
           <Route path="/billing/contacts/:contactId/edit" element={<BillingContactPersonFormPage />} />
+          <Route path="/billing/quotations" element={<BillingQuotationsPage />} />
+          <Route path="/billing/quotations/new" element={<BillingQuotationFormPage />} />
+          <Route path="/billing/quotations/:quotationId/edit" element={<BillingQuotationFormPage />} />
+          <Route path="/billing/quotations/:quotationId/versions" element={<BillingQuotationVersionsPage />} />
           <Route path="/billing/states" element={<StateMasterPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/roles" element={<RolesPage />} />

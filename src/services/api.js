@@ -61,12 +61,36 @@ class ApiService {
   // Attendance APIs
   async getAllAttendance() {
     const response = await this.api.get('/attendance');
-    return response.data;
+    const data = response.data;
+    // Add location links to each attendance record (IN + OUT)
+    if (Array.isArray(data)) {
+      data.forEach(record => {
+        if (record.Latitude_IN && record.Longitude_IN) {
+          record.locationLinkIn = `https://www.google.com/maps?q=${record.Latitude_IN},${record.Longitude_IN}`;
+        }
+        if (record.Latitude_OUT && record.Longitude_OUT) {
+          record.locationLinkOut = `https://www.google.com/maps?q=${record.Latitude_OUT},${record.Longitude_OUT}`;
+        }
+      });
+    }
+    return data;
   }
 
   async getAttendanceByUserId(userId) {
     const response = await this.api.get(`/attendance/${userId}`);
-    return response.data;
+    const data = response.data;
+    // Add location links to each attendance record (IN + OUT)
+    if (Array.isArray(data)) {
+      data.forEach(record => {
+        if (record.Latitude_IN && record.Longitude_IN) {
+          record.locationLinkIn = `https://www.google.com/maps?q=${record.Latitude_IN},${record.Longitude_IN}`;
+        }
+        if (record.Latitude_OUT && record.Longitude_OUT) {
+          record.locationLinkOut = `https://www.google.com/maps?q=${record.Latitude_OUT},${record.Longitude_OUT}`;
+        }
+      });
+    }
+    return data;
   }
 
   async updateAttendance(id, data) {
@@ -140,6 +164,52 @@ class ApiService {
   async deleteContactPerson(id) {
     const response = await this.api.delete(`/contacts/${id}`);
     return response.data;
+  }
+
+  // Quotation APIs
+  async getQuotations() {
+    const response = await this.api.get('/quotations');
+    return response.data;
+  }
+
+  async getQuotationById(id) {
+    const response = await this.api.get(`/quotations/${id}`);
+    return response.data;
+  }
+
+  async createQuotation(data) {
+    const response = await this.api.post('/quotations', data);
+    return response.data;
+  }
+
+  async updateQuotation(id, data) {
+    const response = await this.api.put(`/quotations/${id}`, data);
+    return response.data;
+  }
+
+  async deleteQuotation(id) {
+    const response = await this.api.delete(`/quotations/${id}`);
+    return response.data;
+  }
+
+  async getRevisedQuotation(id) {
+    const response = await this.api.get(`/quotations/${id}`);
+    return response.data;
+  }
+
+  async getQuotationVersions(id) {
+    const response = await this.api.get(`/quotations/${id}/versions`);
+    return response.data;
+  }
+
+  async downloadQuotationVersion(quotationId, versionId) {
+    const response = await this.api.get(
+      `/quotations/${quotationId}/versions/${versionId}/download`,
+      {
+        responseType: 'blob',
+      }
+    );
+    return response;
   }
 
   // Leave APIs
