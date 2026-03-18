@@ -16,6 +16,7 @@ import {
   CardContent,
   Tabs,
   Tab,
+  Link,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { Visibility, FilterList, Today, CalendarMonth } from '@mui/icons-material';
@@ -242,6 +243,48 @@ export default function Attendance() {
       valueFormatter: (params) => formatDateTimeValue(params.value),
     },
     {
+      field: 'locationLinkIn',
+      headerName: 'Location (IN)',
+      width: 150,
+      sortable: false,
+      renderCell: (params) => (
+        params.value ? (
+          <Link
+            href={params.value}
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+            variant="body2"
+          >
+            In Map
+          </Link>
+        ) : (
+          <Typography variant="body2" color="text.secondary">-</Typography>
+        )
+      ),
+    },
+    {
+      field: 'locationLinkOut',
+      headerName: 'Location (OUT)',
+      width: 150,
+      sortable: false,
+      renderCell: (params) => (
+        params.value ? (
+          <Link
+            href={params.value}
+            target="_blank"
+            rel="noreferrer"
+            underline="hover"
+            variant="body2"
+          >
+            Out Map
+          </Link>
+        ) : (
+          <Typography variant="body2" color="text.secondary">-</Typography>
+        )
+      ),
+    },
+    {
       field: 'Duration',
       headerName: 'Duration',
       width: 120,
@@ -454,6 +497,42 @@ export default function Attendance() {
               </Box>
               <Box sx={{ mb: 1 }}>
                 <strong>Duration:</strong> {selectedRecord.Duration || '-'}
+              </Box>
+              <Box sx={{ mb: 1 }}>
+                <strong>Location (IN):</strong>{' '}
+                {selectedRecord.locationLinkIn ? (
+                  <Link
+                    href={selectedRecord.locationLinkIn}
+                    target="_blank"
+                    rel="noreferrer"
+                    underline="hover"
+                    variant="body2"
+                  >
+                    Open in Google Maps
+                  </Link>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    -
+                  </Typography>
+                )}
+              </Box>
+              <Box sx={{ mb: 1 }}>
+                <strong>Location (OUT):</strong>{' '}
+                {selectedRecord.locationLinkOut ? (
+                  <Link
+                    href={selectedRecord.locationLinkOut}
+                    target="_blank"
+                    rel="noreferrer"
+                    underline="hover"
+                    variant="body2"
+                  >
+                    Open in Google Maps
+                  </Link>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    -
+                  </Typography>
+                )}
               </Box>
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={6}>
