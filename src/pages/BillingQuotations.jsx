@@ -51,6 +51,22 @@ export default function BillingQuotations() {
     return String(num).padStart(2, '0');
   };
 
+  const getItemRate = (item) => {
+    const purchasePrice =
+      item.purchasePrice ??
+      item.PurchasePrice ??
+      item.purchase_price ??
+      item.Purchase_Price;
+    const factor = item.factor ?? item.Factor;
+    const legacyRate = item.rate ?? item.Rate ?? item.unitPrice ?? item.UnitPrice;
+
+    if (Number(factor) > 0) {
+      return Math.round((Number(purchasePrice) || 0) / Number(factor));
+    }
+
+    return legacyRate ?? 0;
+  };
+
   const getDownloadFileName = (headers, quote, version) => {
     const disposition = headers?.['content-disposition'] || headers?.['Content-Disposition'];
     const match = disposition?.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)["']?/i);
@@ -327,7 +343,7 @@ export default function BillingQuotations() {
                     item.ProductDescription ||
                     'Item'
                   }</strong>{' '}-{' '}
-                  {item.quantity ?? item.Quantity} x {item.rate ?? item.Rate} ({item.unit || item.Unit || '-'})
+                  {item.quantity ?? item.Quantity} x {getItemRate(item)} ({item.unit || item.Unit || '-'})
                 </li>
               ))}
             </ol>
