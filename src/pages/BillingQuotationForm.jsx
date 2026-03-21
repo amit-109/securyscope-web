@@ -29,9 +29,21 @@ const initialFormData = {
       hsn_sac: '',
       unit: '',
       quantity: 1,
-      rate: 0,
+      purchasePrice: 0,
+      factor: 1,
     },
   ],
+};
+
+const roundRate = (purchasePrice, factor) => {
+  const parsedPurchasePrice = Number(purchasePrice) || 0;
+  const parsedFactor = Number(factor) || 0;
+
+  if (!parsedFactor) {
+    return 0;
+  }
+
+  return Math.round(parsedPurchasePrice / parsedFactor);
 };
 
 const mapQuotationToForm = (data) => {
@@ -45,27 +57,40 @@ const mapQuotationToForm = (data) => {
     [];
 
   const items = Array.isArray(rawItems)
-    ? rawItems.map((item) => ({
-        description:
-          item.description ||
-          item.Description ||
-          item.itemDescription ||
-          item.ItemDescription ||
-          item.productDescription ||
-          item.ProductDescription ||
-          '',
-        hsn_sac: item.hsn_sac || item.Hsn_Sac || item.HSN_SAC || item.hsnSac || item.HsnSac || '',
-        unit: item.unit || item.Unit || '',
-        quantity: item.quantity ?? item.Quantity ?? item.qty ?? item.Qty ?? 1,
-        rate: item.rate ?? item.Rate ?? item.unitPrice ?? item.UnitPrice ?? 0,
-      }))
+    ? rawItems.map((item) => {
+        const purchasePrice =
+          item.purchasePrice ??
+          item.PurchasePrice ??
+          item.purchase_price ??
+          item.Purchase_Price;
+        const factor = item.factor ?? item.Factor;
+        const rate = item.rate ?? item.Rate ?? item.unitPrice ?? item.UnitPrice ?? 0;
+
+        return {
+          description:
+            item.description ||
+            item.Description ||
+            item.itemDescription ||
+            item.ItemDescription ||
+            item.productDescription ||
+            item.ProductDescription ||
+            '',
+          hsn_sac:
+            item.hsn_sac || item.Hsn_Sac || item.HSN_SAC || item.hsnSac || item.HsnSac || '',
+          unit: item.unit || item.Unit || '',
+          quantity: item.quantity ?? item.Quantity ?? item.qty ?? item.Qty ?? 1,
+          purchasePrice: purchasePrice ?? rate,
+          factor: factor ?? 1,
+        };
+      })
     : [
         {
           description: '',
           hsn_sac: '',
           unit: '',
           quantity: 1,
-          rate: 0,
+          purchasePrice: 0,
+          factor: 1,
         },
       ];
 
@@ -157,7 +182,7 @@ export default function BillingQuotationForm() {
 
   const calculateItemAmount = (item) => {
     const qty = Number(item.quantity) || 0;
-    const rate = Number(item.rate) || 0;
+    const rate = roundRate(item.purchasePrice, item.factor);
     return qty * rate;
   };
 
@@ -179,7 +204,7 @@ export default function BillingQuotationForm() {
       ...prev,
       items: [
         ...(prev.items || []),
-        { description: '', hsn_sac: '', unit: '', quantity: 1, rate: 0 },
+        { description: '', hsn_sac: '', unit: '', quantity: 1, purchasePrice: 0, factor: 1 },
       ],
     }));
   };
@@ -198,6 +223,13 @@ export default function BillingQuotationForm() {
     if (!formData.contactPersonId) missingFields.push('Contact Person');
     if (!formData.endUser.trim()) missingFields.push('End User');
     if (!formData.proposalDetails.trim()) missingFields.push('Proposal Details');
+    if (!(formData.items || []).length) missingFields.push('At least one item');
+
+    const hasInvalidFactor = (formData.items || []).some((item) => !(Number(item.factor) > 0));
+    if (hasInvalidFactor) {
+      setError('Factor must be greater than 0 for all items');
+      return false;
+    }
 
     if (missingFields.length) {
       setError(`${missingFields.join(', ')} required`);
@@ -217,21 +249,32 @@ export default function BillingQuotationForm() {
     setError('');
 
     try {
-      const payload = {
-        Id: quotationId || undefined,
-        QuotationNumber: formData.quotationNumber,
-        QuotationDate: formData.quotationDate,
-        clientId: formData.clientId,
-        contactPersonId: formData.contactPersonId,
-        endUser: formData.endUser,
-        proposalDetails: formData.proposalDetails,
-        status: formData.status,
-        items: formData.items,
-      };
+      const normalizedItems = (formData.items || []).map((item) => ({
+        description: item.description,
+        hsn_sac: item.hsn_sac,
+        unit: item.unit,
+        quantity: Number(item.quantity) || 0,
+        purchasePrice: Number(item.purchasePrice) || 0,
+        factor: Number(item.factor) || 0,
+      }));
 
       if (isEditMode) {
-        await apiService.updateQuotation(quotationId, payload);
+        await apiService.updateQuotation(quotationId, {
+          items: normalizedItems,
+        });
       } else {
+        const payload = {
+          Id: quotationId || undefined,
+          QuotationNumber: formData.quotationNumber,
+          QuotationDate: formData.quotationDate,
+          clientId: formData.clientId,
+          contactPersonId: formData.contactPersonId,
+          endUser: formData.endUser,
+          proposalDetails: formData.proposalDetails,
+          status: formData.status,
+          items: normalizedItems,
+        };
+
         await apiService.createQuotation(payload);
       }
 
@@ -486,10 +529,33 @@ export default function BillingQuotationForm() {
                         fullWidth
                         size="small"
                         type="number"
-                        label="Rate"
-                        value={item.rate}
-                        onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value))}
+                        label="Purchase Price"
+                        value={item.purchasePrice}
+                        onChange={(e) =>
+                          handleItemChange(index, 'purchasePrice', Number(e.target.value))
+                        }
                         disabled={loading || saving}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        label="Factor"
+                        value={item.factor}
+                        onChange={(e) => handleItemChange(index, 'factor', Number(e.target.value))}
+                        disabled={loading || saving}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Rate"
+                        value={roundRate(item.purchasePrice, item.factor)}
+                        InputProps={{ readOnly: true }}
+                        disabled
                       />
                     </Grid>
                     <Grid item xs={12} md={2}>
