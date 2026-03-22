@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import { Add, Delete, Download, Edit, Visibility, History } from '@mui/icons-material';
+import { Add, Delete, Download, Edit, Visibility, History, Email } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
 
@@ -22,6 +22,7 @@ export default function BillingQuotations() {
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [viewDialog, setViewDialog] = useState(false);
   const [downloadingQuotationId, setDownloadingQuotationId] = useState(null);
+  const [emailingQuotationId, setEmailingQuotationId] = useState(null);
   const navigate = useNavigate();
 
   const statuses = ['Draft', 'Sent', 'Final', 'ConvertedToPO'];
@@ -180,6 +181,30 @@ export default function BillingQuotations() {
     }
   };
 
+  const handleSendQuotationEmail = async (quote) => {
+    const quoteId = quote.Id || quote.id;
+    const contactPersonId = quote.ContactPersonId || quote.contactPersonId;
+
+    if (!contactPersonId) {
+      window.alert('No contact person is selected for this quotation.');
+      return;
+    }
+
+    setEmailingQuotationId(quoteId);
+
+    try {
+      await apiService.sendQuotationEmail(quoteId, {
+        contactPersonIds: [contactPersonId],
+      });
+      window.alert('Quotation email sent to client successfully.');
+    } catch (error) {
+      console.error('Error sending quotation email:', error);
+      window.alert(error.response?.data?.error || 'Failed to send quotation email.');
+    } finally {
+      setEmailingQuotationId(null);
+    }
+  };
+
   const handleEdit = (quote) => {
     navigate(`/billing/quotations/${quote.Id || quote.id}/edit`);
   };
@@ -272,12 +297,20 @@ export default function BillingQuotations() {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 220,
+      width: 270,
       sortable: false,
       renderCell: (params) => (
         <Box>
           <IconButton onClick={() => handleView(params.row)} size="small" title="View">
             <Visibility />
+          </IconButton>
+          <IconButton
+            onClick={() => handleSendQuotationEmail(params.row)}
+            size="small"
+            title="Send Email To Client"
+            disabled={emailingQuotationId === (params.row.Id || params.row.id)}
+          >
+            <Email />
           </IconButton>
           <IconButton
             onClick={() => handleDownloadCurrentQuotation(params.row)}
@@ -390,6 +423,16 @@ export default function BillingQuotations() {
         <DialogTitle>Quotation Details</DialogTitle>
         <DialogContent>{renderQuotationDetails(selectedQuotation)}</DialogContent>
         <DialogActions>
+          <Button
+            startIcon={<Email />}
+            onClick={() => handleSendQuotationEmail(selectedQuotation)}
+            disabled={
+              !selectedQuotation ||
+              emailingQuotationId === (selectedQuotation?.Id || selectedQuotation?.id)
+            }
+          >
+            Send Email
+          </Button>
           <Button
             startIcon={<Download />}
             onClick={() => handleDownloadCurrentQuotation(selectedQuotation)}
