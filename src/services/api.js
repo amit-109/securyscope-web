@@ -202,6 +202,11 @@ class ApiService {
     return response.data;
   }
 
+  async sendQuotationEmail(id, data) {
+    const response = await this.api.post(`/quotation-email/${id}`, data);
+    return response.data;
+  }
+
   async downloadQuotationVersion(quotationId, versionId) {
     const response = await this.api.get(
       `/quotations/${quotationId}/versions/${versionId}/download`,
