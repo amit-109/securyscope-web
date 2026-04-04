@@ -187,6 +187,11 @@ class ApiService {
     return response.data;
   }
 
+  async updateQuotationStatus(id, status) {
+    const response = await this.api.patch(`/quotations/${id}/status`, { status });
+    return response.data;
+  }
+
   async deleteQuotation(id) {
     const response = await this.api.delete(`/quotations/${id}`);
     return response.data;
@@ -215,6 +220,16 @@ class ApiService {
       }
     );
     return response;
+  }
+
+  async getPurchaseOrders() {
+    const response = await this.api.get('/purchase-orders');
+    return response.data;
+  }
+
+  async createPurchaseOrder(data) {
+    const response = await this.api.post('/purchase-orders', data);
+    return response.data;
   }
 
   // Leave APIs
